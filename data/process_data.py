@@ -1,16 +1,81 @@
 import sys
-
+import pandas as pd
+from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
-    pass
+    """
+     ETL (EXTACT): load data from two files and returned a merged veriosn 
+
+     INPUT:
+     messages_filepath: string for the messages dataset file path
+     categories_filepath: string for the categories dataset file path
+
+     OUTPUT:
+     merged data frame 
+
+    """
+
+    # reading the messages information
+    messages = pd.read_csv(messages_filepath)
+
+    # reading the categories information
+    categories = pd.read_csv(categories_filepath)
+
+    # merging the two datasets together 
+    df = messages.merge(categories, on="id")
+    
+    return df
+
 
 
 def clean_data(df):
-    pass
+    """
+    ETL (TRANSFORM): change the data by updating categorical colums and droping duplicates
+
+    INPUT:
+    df: pandas dataframe to work with
+
+    OUTPUT:
+    Transformed dataframe 
+    """
+
+    # creating a dataframe of the 36 individual category columns
+    categories = df.categories.str.split(pat=';', expand=True)
+
+    # selecting the first row of the categories dataframe and using it
+    # to extract and  rename categories columns. since all values end with - then a number
+    # the - is used to get the first part of the string as column name
+    row = categories.loc[0]
+    category_colnames = row.apply(lambda x: x.split("-")[0])
+    categories.columns = category_colnames
+
+    # converting category values to 0s or 1s using negative indexing to 
+    # get last character of a string
+    for column in categories:
+        categories[column] = categories[column].apply(lambda x: x[-1])
+        categories[column] = categories[column].astype("int")
+
+    # replacing categories column in df with new columns (drop then Concatenate)
+    df.drop(['categories'], axis=1, inplace = True)
+    df = pd.concat([df, categories], axis = 1)
+
+    # removing duplicates
+    df.drop_duplicates(inplace = True)
+
+    return df
 
 
 def save_data(df, database_filename):
-    pass  
+    """
+    ETL (LOAD) : load the dataframe to an SQLite database using SQLAlchemy engine
+
+    INPUT:
+    df: extracted and transformed pandas dataframe
+    database_filename: string file name for the database
+    """
+    
+    engine = create_engine('sqlite:///'+ database_filename)
+    df.to_sql('fig8data', engine, index=False, if_exists = 'replace')
 
 
 def main():
