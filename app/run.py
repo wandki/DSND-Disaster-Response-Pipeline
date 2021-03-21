@@ -8,7 +8,8 @@ from nltk.tokenize import word_tokenize
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
-from sklearn.externals import joblib
+from plotly.graph_objs import Pie
+import joblib
 from sqlalchemy import create_engine
 
 
@@ -26,11 +27,11 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+engine = create_engine('sqlite:///../data/DisasterResponse.db')
+df = pd.read_sql_table('fig8data', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model = joblib.load("../models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -40,17 +41,61 @@ def index():
     
     # extract data needed for visuals
     # TODO: Below is an example - modify to extract data for your own visuals
+    
+    # chart 1
+    classes_sum = df.iloc[:,4:].sum().sort_values(ascending=False)
+    classes_names = list(classes_sum.index)
+    
+    # chart 2
+    is_translated =  (df['message']!=df['original']).astype(bool).value_counts()
+    
+    # chart 3
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
     # create visuals
-    # TODO: Below is an example - modify to create your own visuals
-    graphs = [
-        {
+    graphs = [{
             'data': [
                 Bar(
-                    x=genre_names,
-                    y=genre_counts
+                    y=classes_names,
+                    x=classes_sum,
+                    orientation='h'
+                )
+            ],
+
+            'layout': {
+                'title': 'Classifications Counts',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Classifications"
+                }
+            }
+        },
+        {
+            'data': [
+                Pie(
+                    labels=is_translated.index,
+                    values=is_translated
+                )
+            ],
+
+            'layout': {
+                'title': 'The percentage of translated messages',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Genre"
+                }
+            }
+        },
+        {
+            'data': [
+                Pie(
+                    labels=genre_names,
+                    values=genre_counts
                 )
             ],
 
