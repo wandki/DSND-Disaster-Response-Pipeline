@@ -65,12 +65,14 @@ def index():
 
             'layout': {
                 'title': 'Classifications Counts',
-                'yaxis': {
-                    'title': "Count"
-                },
                 'xaxis': {
-                    'title': "Classifications"
-                }
+                    'title': "Classifications counts"
+                },
+                'margin':{
+                    'l': 300,
+                    'pad' : 5
+                },
+                'height': 700
             }
         },
         {
