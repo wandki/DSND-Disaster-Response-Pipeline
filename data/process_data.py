@@ -55,6 +55,9 @@ def clean_data(df):
         categories[column] = categories[column].apply(lambda x: x[-1])
         categories[column] = categories[column].astype("int")
 
+    # replace values of (2) in related column with zero
+    categories.loc[categories['related'] == 2, 'related'] = 0
+    
     # replacing categories column in df with new columns (drop then Concatenate)
     df.drop(['categories'], axis=1, inplace = True)
     df = pd.concat([df, categories], axis = 1)
