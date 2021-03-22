@@ -28,7 +28,7 @@ data:
 - css input files from figure 8
 
 Models:
-- classifier.pkl : pickle file which is the output of the ML pipeline
+- classifier.pkl : pickle file which is the output of the ML pipeline (NOTE: the file is too large to push to git, please run the classifer to generate it)
 - train_classifier.py : ML pipeline
 
 app:
